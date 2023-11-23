@@ -1,0 +1,16 @@
+{
+  "dependencies": {},
+  "name": "ADVENTOFCODE",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.6.3",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "dev": "nodemon index.ts"
+  }
+}
