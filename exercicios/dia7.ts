@@ -28,7 +28,7 @@ export interface CommandFlags {
 interface Node {
   name: string;
   type: "file" | "dir";
-  size?: number;
+  size: number;
   children?: Node[];
 }
 
@@ -100,7 +100,10 @@ const dia7 = () => {
   // };
 
   const handlePopulateTree = (fileLines: string[]) => {
-    const root: Node = { name: "/", type: "dir", children: [] };
+    //o parse do input as vezes nao popula os filhos do node com o tamanho correto
+    //arquivo ``jwfbvmds``
+
+    const root: Node = { name: "/", type: "dir", children: [], size: 0 };
 
     let currentDir: Node = root;
 
@@ -108,7 +111,12 @@ const dia7 = () => {
       if (line.startsWith("dir")) {
         const dirName = line.substring(4).trim();
 
-        const newDir: Node = { name: dirName, type: "dir", children: [] };
+        const newDir: Node = {
+          name: dirName,
+          type: "dir",
+          children: [],
+          size: 0,
+        };
 
         console.log("newDir", newDir);
 
@@ -173,6 +181,7 @@ const dia7 = () => {
       name: targetDirName,
       type: "dir",
       children: [],
+      size: 0,
     };
 
     currentDir!.children!.push(nodeChildren);
@@ -181,50 +190,59 @@ const dia7 = () => {
   };
   handlePopulateTree(inputLine);
 
-  let docSum = 0;
   const runTree = (node: Node, space: string = " ") => {
-    let dirSum = 0;
-
-    if (!node.children) return;
+    let dirSum = node.size!;
 
     for (const child of node.children ?? []) {
-      //PRECISO SOMAR O TAMANHO DOS DIRETORIOS EM TODAS AS CAMADAS. O DOCSUM TAMBEM TEM QUE CONTAR.
-      if (child.type === "dir") {
-        const fnDirSum = runTree(child, space + "  ");
-        child.size = fnDirSum;
+      const fnDirSum = runTree(child, space + "  ");
+
+      if (child.size === 0) {
+        console.log("child.name", child.name);
       }
 
-      if (child.size !== undefined) {
-        console.log(
-          `${space}- ${child.name.replace("\r", "")} (${child.type}, size=${
-            child.size < 100000 ? child.size : ">100000"
-          })`
-        );
+      // console.log(
+      //   `${space}- ${child.name.replace("\r", "")} (${child.type}, size=${
+      //     child.size < 100000 ? child.size : ">100000"
+      //   })`
+      // );
 
-        const childSize = child.size;
-        if (dirSum < 100000 || childSize < 100000) {
-          dirSum += childSize;
-        }
-        // console.log("childSize", childSize);
+      const childSize = child.size;
 
-        console.log(
-          `${space}- ${child.name.replace("\r", "")} (${child.type}, size=${
-            child.size === undefined ? "" : child.size
-          })`
-        );
-      }
-    }
-    console.log("dirSum", dirSum);
-    if (dirSum < 100000) {
-      docSum += dirSum;
+      dirSum += childSize;
+
+      console.log(
+        `${space}- ${child.name.replace("\r", "")} (${child.type}, size=${
+          child.size === undefined ? "" : child.size
+        })`
+      );
     }
 
-    console.log("docSum", docSum);
+    node.size = dirSum;
     return dirSum;
   };
 
   const root = handlePopulateTree(inputLine);
-  runTree(root);
+
+  console.log("runtree", runTree(root));
+  console.log("total", totalDirSize(root));
+};
+
+const totalDirSize = (node: Node) => {
+  let total = 0;
+
+  if (!node.children) return 0;
+
+  console.log("nodeSize", node.size!);
+
+  for (const child of node.children!) {
+    total += totalDirSize(child);
+  }
+
+  if (node.type === "dir" && node.size! < 100000) {
+    return total + node.size!;
+  }
+
+  return total;
 };
 
 export default dia7;
